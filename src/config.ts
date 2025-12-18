@@ -99,11 +99,19 @@ function parseConfig(content: string): FraviaConfig {
       if (key === "version") config.version = value;
     } else if (currentSection === "filters") {
       // Format: 1_SOCIAL=-site:pinterest.* ...
+      // Config file uses Google-style syntax; we apply to all engines
       const parts = key.split("_");
       if (parts.length >= 2) {
         const code = parts[0];
         const name = parts.slice(1).join("_");
-        config.filters.set(code, { code, name, value });
+        config.filters.set(code, { 
+          code, 
+          name, 
+          google: value,
+          bing: value.replace(/-site:/g, "NOT site:").replace(/-inurl:/g, "NOT url:").replace(/-intitle:/g, "NOT intitle:").replace(/-"/g, "NOT \""),
+          yandex: value,
+          ddg: value.replace(/-site:/g, "-site:").replace(/-inurl:/g, "-inurl:")
+        });
       }
     } else if (currentPhase) {
       if (key === "desc") {

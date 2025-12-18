@@ -100,29 +100,79 @@ export function buildQueries(
 }
 
 /**
- * Execute queries against search engines
- * Note: This is a stub - actual implementation would call real search APIs
+ * Execute queries and return execution plan
+ * Uses engines module to generate browser/API instructions
  */
 export async function executeQueries(queries: Query[]): Promise<QueryResult[]> {
+  const { loadEngines, buildSearchUrl, generateBrowserInstructions, generateApiInstructions } = await import("./engines.js");
+  const engines = await loadEngines();
   const results: QueryResult[] = [];
 
-  for (const q of queries) {
-    // In production, this would call actual search APIs:
-    // - Google Custom Search API
-    // - Bing Web Search API
-    // - Yandex XML API
-    // - Brave Search API
-    // etc.
+  // Group queries by engine type
+  const browserQueries: Query[] = [];
+  const apiQueries: Query[] = [];
 
-    // For now, return structured query info as placeholder
-    results.push({
-      engine: q.engine,
-      query: q.query,
-      title: `[${q.engine.toUpperCase()}] Query prepared`,
-      url: getSearchUrl(q.engine, q.query),
-      snippet: `Execute manually: ${q.query}`,
-      timestamp: new Date().toISOString(),
-    });
+  for (const q of queries) {
+    const engine = engines.get(q.engine);
+    if (!engine) {
+      // Unknown engine - treat as browser-based
+      browserQueries.push(q);
+    } else if (engine.type === "browser") {
+      browserQueries.push(q);
+    } else {
+      apiQueries.push(q);
+    }
+  }
+
+  // Generate browser automation instructions
+  if (browserQueries.length > 0) {
+    const browserInstructions = await generateBrowserInstructions(
+      browserQueries.map(q => ({ engine: q.engine, query: q.query }))
+    );
+    
+    for (const inst of browserInstructions) {
+      results.push({
+        engine: inst.engine,
+        query: inst.navigateUrl,
+        title: `[BROWSER] ${inst.engine}`,
+        url: inst.navigateUrl,
+        snippet: inst.instructions.join("\n"),
+        timestamp: new Date().toISOString(),
+      });
+    }
+  }
+
+  // Generate API instructions
+  if (apiQueries.length > 0) {
+    const apiInstructions = await generateApiInstructions(
+      apiQueries.map(q => ({ engine: q.engine, query: q.query }))
+    );
+    
+    for (const inst of apiInstructions) {
+      results.push({
+        engine: inst.engine,
+        query: inst.url,
+        title: `[API] ${inst.engine}`,
+        url: inst.url,
+        snippet: `Method: ${inst.method}\nHeaders: ${JSON.stringify(inst.headers)}\n${inst.notes}`,
+        timestamp: new Date().toISOString(),
+      });
+    }
+  }
+
+  // Fallback for queries without engine config
+  for (const q of queries) {
+    const hasResult = results.some(r => r.engine === q.engine);
+    if (!hasResult) {
+      results.push({
+        engine: q.engine,
+        query: q.query,
+        title: `[${q.engine.toUpperCase()}] Query prepared`,
+        url: getSearchUrl(q.engine, q.query),
+        snippet: `Execute manually: ${q.query}`,
+        timestamp: new Date().toISOString(),
+      });
+    }
   }
 
   return results;

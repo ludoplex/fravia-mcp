@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "bun:test";
 import { getPhaseMenu, PHASES, NOISE_FILTERS } from "../src/phases.js";
 
 describe("PHASES", () => {

@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "bun:test";
 import { buildQueries } from "../src/executor.js";
 import { loadConfig } from "../src/config.js";
 

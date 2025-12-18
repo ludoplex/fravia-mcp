@@ -1,0 +1,30 @@
+# Fravia Multi-Engine Search Configuration
+# Format: engine|type|name|base_url|result_selector|title_selector|url_selector|snippet_selector
+# type: api|browser
+# Lines starting with # are comments
+
+# API-based engines (fast, reliable)
+google|api|Google Custom Search|https://www.googleapis.com/customsearch/v1|items|title|link|snippet
+bing|api|Bing Search|https://api.bing.microsoft.com/v7.0/search|webPages.value|name|url|snippet
+brave|api|Brave Search|https://api.search.brave.com/res/v1/web/search|web.results|title|url|description
+archive|api|Archive.org CDX|https://web.archive.org/cdx/search/cdx|.|.|.|.
+github|api|GitHub|https://api.github.com/search/repositories|items|full_name|html_url|description
+scholar|api|Google Scholar|https://scholar.google.com/scholar|.|.|.|.
+
+# Browser-based engines (requires MCP browser tools)
+searx|browser|Searx|https://searx.be/search?q=|.result|.result h3 a|.result .url|.result .content
+yandex|browser|Yandex|https://yandex.com/search/?text=|.serp-item|.serp-item__title-link|.serp-item__title-link|.serp-item__text
+ddg|browser|DuckDuckGo|https://duckduckgo.com/?q=|.result|.result__a|.result__url|.result__snippet
+baidu|browser|Baidu|https://www.baidu.com/s?wd=|.result|.t a|.c-showurl|.c-abstract
+wiby|browser|Wiby|https://wiby.me/?q=|.result|a|a|p
+
+# Archive services
+archivetoday|browser|Archive.today|https://archive.today/?run=1&url=|.TEXT-BLOCK|a|a|.
+webcite|browser|WebCite|https://www.webcitation.org/query?url=|.citation|a|a|.
+
+# Code search
+searchcode|browser|Searchcode|https://searchcode.com/?q=|.result|.title a|.title a|.desc
+codeberg|browser|Codeberg|https://codeberg.org/explore/repos?q=|.item|.title a|.title a|.desc
+gitlab|api|GitLab|https://gitlab.com/api/v4/projects|.|name_with_namespace|web_url|description
+sourceforge|browser|SourceForge|https://sourceforge.net/directory/?q=|.project-info|a.title|a.title|.description
+

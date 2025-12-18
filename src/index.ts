@@ -136,6 +136,15 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           required: [],
         },
       },
+      {
+        name: "fravia_list_engines",
+        description: "List all available search engines with their type (api/browser).",
+        inputSchema: {
+          type: "object",
+          properties: {},
+          required: [],
+        },
+      },
     ],
   };
 });
@@ -167,6 +176,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           args?.continue_to_phase as number | undefined,
           args?.reason as string | undefined
         );
+      
+      case "fravia_list_engines":
+        return await handleListEngines();
       
       default:
         throw new Error(`Unknown tool: ${name}`);
@@ -281,6 +293,29 @@ function handleSetSubjects(subjects: Array<{id: string, text: string}>) {
         text: `Subject map set:\n${subjects.map(s => `  [${s.id}] ${s.text}`).join('\n')}`,
       },
     ],
+  };
+}
+
+async function handleListEngines() {
+  const { getAvailableEngines } = await import("./engines.js");
+  const engines = await getAvailableEngines();
+
+  let output = "*** AVAILABLE SEARCH ENGINES ***\n\n";
+  output += "--- API ENGINES (fast, requires keys) ---\n";
+  engines.filter(e => e.type === "api").forEach(e => {
+    output += `[${e.id}] ${e.name}\n`;
+  });
+
+  output += "\n--- BROWSER ENGINES (MCP browser automation) ---\n";
+  engines.filter(e => e.type === "browser").forEach(e => {
+    output += `[${e.id}] ${e.name}\n`;
+  });
+
+  output += `\nTotal: ${engines.length} engines\n`;
+  output += "Note: Browser engines require mcp_cursor-ide-browser tools\n";
+
+  return {
+    content: [{ type: "text", text: output }],
   };
 }
 
